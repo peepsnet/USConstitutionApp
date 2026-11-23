@@ -40,6 +40,13 @@ Requires JDK 17+ (Android Studio's bundled JDK works) and the Android SDK (platf
 
     ./gradlew assembleDebug      # app/build/outputs/apk/debug/app-debug.apk
 
+## License
+
+The source code is released under the [MIT License](LICENSE). That license covers the code and the
+text written for this project (introductions, the About screen). It does not claim ownership of the
+historical documents in `app/src/main/assets`, which are public-domain primary sources, U.S.
+government works, or credited excerpts from the sources named in the About screen.
+
 ## Notes on the texts
 
 The primary documents are in the public domain; official speeches of a President and Supreme Court
