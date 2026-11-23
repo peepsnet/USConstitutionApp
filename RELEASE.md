@@ -1,43 +1,45 @@
 # Building a signed release
 
 The app builds as a debug APK with no setup (`gradlew assembleDebug`). A release build that you can
-install on other phones or upload to Google Play must be signed with a key that only you hold.
+install on other phones, attach to a GitHub Release, or upload to Google Play must be signed with a
+key that only you hold.
 
-## 1. Before publishing on Google Play
+## The easy way: `build-release.ps1`
 
-* Change `applicationId` in `app/build.gradle.kts` (currently `com.example.usconstitution`).
-  Google Play rejects `com.example` ids. Pick a reverse-domain id you control, for example
-  `com.yourname.usconstitution`, and keep it forever: it cannot be changed after publishing.
-* Raise `versionCode` by 1 for every upload, and update `versionName`.
+Run it in a PowerShell window, from the project folder:
 
-## 2. Create the signing key (once)
+    powershell -ExecutionPolicy Bypass -File .\build-release.ps1
 
-Run this yourself. `keytool` asks you for the passwords, so nobody else ever sees them. Use the JDK that
-comes with Android Studio:
+* **First run:** it creates your signing key at `%USERPROFILE%\keys\us-constitution-release.jks`
+  (keytool asks for a password and some details; the details are stored in the certificate and are
+  visible to anyone who inspects the APK).
+* **Every run:** it asks for the keystore password, passes it to Gradle through the environment for that
+  one run (nothing is written to a file), builds the minified release, checks the signature and copies
+  the APK to `US-Constitution-3.0.0.apk` in the folder above the project.
 
-    & "C:\Program Files\Android\Android Studio\jbr\bin\keytool.exe" -genkeypair -v `
-        -keystore "$env:USERPROFILE\keys\us-constitution-release.jks" `
-        -alias release -keyalg RSA -keysize 2048 -validity 10000
+**Back up the `.jks` file and its password.** If you lose either you cannot publish updates to the
+app: Android only installs an update that is signed with the same key as the installed version.
 
-(Create the `keys` folder first, and keep it OUTSIDE this project and outside OneDrive-synced
-folders if you can.)
+## Other ways to give Gradle the key
 
-**Back up the `.jks` file and both passwords somewhere safe.** If you lose the key you cannot update
-the app under the same listing. Google Play App Signing (enabled by default for new apps) lets Google
-hold the final signing key and gives you an upload key you can reset, which is the safer setup.
+* `keystore.properties` in the project root (copy `keystore.properties.example`; it is git-ignored), or
+* the environment variables `KEYSTORE_FILE`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`.
 
-## 3. Tell the build about the key
+Then `gradlew assembleRelease` signs automatically. Without signing details it produces an unsigned
+APK that will not install. `gradlew bundleRelease` builds the `.aab` bundle that Google Play expects.
 
-Copy `keystore.properties.example` to `keystore.properties` in the project root and fill in the path,
-alias and passwords. The file is listed in `.gitignore`.
+## Before each new version
 
-## 4. Build
+* Raise `versionCode` by 1 in `app/build.gradle.kts` for every release, and update `versionName`.
+* Tag the commit (for example `v3.0.1`) and attach the APK to a GitHub Release.
 
-    .\gradlew.bat assembleRelease     # app/build/outputs/apk/release/app-release.apk  (install on phones)
-    .\gradlew.bat bundleRelease       # app/build/outputs/bundle/release/app-release.aab  (upload to Play)
+## Before publishing on Google Play
 
-Without `keystore.properties` these still build, but the release APK is unsigned and will not install.
+* Change `applicationId` in `app/build.gradle.kts` (currently `com.example.usconstitution`). Google Play
+  rejects `com.example` ids. Pick a reverse-domain id you control and keep it forever.
+* Use Play App Signing (the default for new apps): Google holds the final signing key and your key
+  becomes an upload key that can be reset.
 
-## 5. Check the signature
+## Check a signature
 
-    & "$env:LOCALAPPDATA\Android\Sdk\build-tools\36.1.0\apksigner.bat" verify --verbose app\build\outputs\apk\release\app-release.apk
+    & "$env:LOCALAPPDATA\Android\Sdk\build-tools\36.1.0\apksigner.bat" verify --verbose --print-certs US-Constitution-3.0.0.apk

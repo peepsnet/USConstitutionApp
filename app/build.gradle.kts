@@ -6,12 +6,23 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
-// Release signing details live in keystore.properties at the project root. That file and the
-// keystore itself are private: they are never part of the project. See RELEASE.md.
+// Release signing details come from keystore.properties at the project root, or from the
+// environment (KEYSTORE_FILE, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD), which is what
+// build-release.ps1 uses so that no password is ever written to a file. The keystore and
+// keystore.properties are private and never part of the project. See RELEASE.md.
 val keystoreProps = Properties().apply {
     val file = rootProject.file("keystore.properties")
     if (file.exists()) file.inputStream().use { load(it) }
 }
+fun signingSetting(property: String, environment: String): String? =
+    keystoreProps.getProperty(property) ?: System.getenv(environment)
+
+val releaseStoreFile = signingSetting("storeFile", "KEYSTORE_FILE")
+val releaseStorePassword = signingSetting("storePassword", "KEYSTORE_PASSWORD")
+val releaseKeyAlias = signingSetting("keyAlias", "KEY_ALIAS")
+val releaseKeyPassword = signingSetting("keyPassword", "KEY_PASSWORD")
+val canSignRelease = listOf(releaseStoreFile, releaseStorePassword, releaseKeyAlias, releaseKeyPassword)
+    .all { !it.isNullOrBlank() }
 
 android {
     namespace = "com.example.usconstitution"
@@ -26,12 +37,12 @@ android {
     }
 
     signingConfigs {
-        if (keystoreProps.isNotEmpty()) {
+        if (canSignRelease) {
             create("release") {
-                storeFile = file(keystoreProps.getProperty("storeFile"))
-                storePassword = keystoreProps.getProperty("storePassword")
-                keyAlias = keystoreProps.getProperty("keyAlias")
-                keyPassword = keystoreProps.getProperty("keyPassword")
+                storeFile = file(releaseStoreFile!!)
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
             }
         }
     }
@@ -41,8 +52,8 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
-            // Without keystore.properties the release build is produced unsigned.
-            if (keystoreProps.isNotEmpty()) {
+            // Without signing details the release build is produced unsigned.
+            if (canSignRelease) {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
