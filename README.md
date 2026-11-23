@@ -4,6 +4,23 @@ A searchable reader for the Constitution of the United States and the documents 
 current versions of Android (Kotlin, Jetpack Compose, Material 3; targets Android 16, API 36;
 runs on Android 8.0 and up).
 
+**[Download the latest signed APK](https://github.com/peepsnet/USConstitutionApp/releases/latest)** (Android 8.0 or newer).
+
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/home.png" width="240" alt="Home screen with the collections"><br><sub>Collections, with a banner and icons</sub></td>
+    <td align="center"><img src="docs/screenshots/reader.png" width="240" alt="Reading Article I of the Constitution"><br><sub>Reading Article I</sub></td>
+    <td align="center"><img src="docs/screenshots/supreme-court-case.png" width="240" alt="Gideon v. Wainwright excerpt"><br><sub>A Supreme Court case</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/search.png" width="240" alt="Search results for Gideon"><br><sub>Search across every document</sub></td>
+    <td align="center"><img src="docs/screenshots/appearance.png" width="240" alt="Appearance dialog with theme and color choices"><br><sub>Light, dark and accent colors</sub></td>
+    <td align="center"><img src="docs/screenshots/dark-theme.png" width="240" alt="Dark theme in Liberty red"><br><sub>Dark theme, Liberty red</sub></td>
+  </tr>
+</table>
+
 ## What is in it
 
 * The Constitution, the Bill of Rights and the other amendments, article by article.
